@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+pydub
+librosa
+numpy
+soundfile
+pretty_midi
+music21
+scipy
