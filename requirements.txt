@@ -8,3 +8,5 @@ soundfile
 pretty_midi
 music21
 scipy
+yt-dlp
+demucs

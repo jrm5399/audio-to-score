@@ -1,7 +1,11 @@
-venv/
+ven/
 __pycache__/
 *.pyc
-.env
+*.pyo
+
 data/input/*
+data/stems/*
 data/output/*
+
+.env
 .DS_Store
