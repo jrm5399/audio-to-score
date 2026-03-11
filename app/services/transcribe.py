@@ -34,7 +34,7 @@ def smooth_midi_sequence(midi_seq, window_size=5):
     return smoothed
 
 
-def transcribe_vocals_to_midi(audio_path: str):
+def transcribe_audio_to_midi(audio_path: str):
     y, sr = librosa.load(audio_path, sr=44100, mono=True)
 
     f0, voiced_flag, voiced_probs = librosa.pyin(
