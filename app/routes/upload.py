@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
 from pathlib import Path
+from urllib.parse import quote
 
 from app.services.ingest import save_uploaded_file, download_youtube_audio
 from app.services.pipeline import process_audio
@@ -13,16 +14,15 @@ ALLOWED_EXTENSIONS = {".mid", ".musicxml", ".xml", ".wav"}
 
 
 def build_download_url(file_path: str) -> str:
-    return f"/download?file={file_path}"
+    return f"/download?file={quote(file_path)}"
 
 
 def add_stem_downloads(stems: dict) -> dict:
     return {
-        **stems,
-        "vocals_download": build_download_url(stems["vocals_path"]),
-        "drums_download": build_download_url(stems["drums_path"]),
-        "bass_download": build_download_url(stems["bass_path"]),
-        "other_download": build_download_url(stems["other_path"]),
+        "vocals": {"download": build_download_url(stems["vocals_path"])},
+        "drums": {"download": build_download_url(stems["drums_path"])},
+        "bass": {"download": build_download_url(stems["bass_path"])},
+        "other": {"download": build_download_url(stems["other_path"])},
     }
 
 

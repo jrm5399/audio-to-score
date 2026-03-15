@@ -18,9 +18,14 @@ def sanitize_filename(filename: str) -> str:
 
     return f"{safe_name}{safe_ext}"
 
-
+ALLOWED_UPLOAD_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac"}
 def save_uploaded_file(file: UploadFile) -> dict:
     safe_filename = sanitize_filename(file.filename or "uploaded_audio.mp3")
+    ext = os.path.splitext(safe_filename)[1].lower()
+
+    if ext not in ALLOWED_UPLOAD_EXTENSIONS:
+        raise ValueError(f"Unsupported file type: {ext}")
+
     file_path = os.path.join(INPUT_DIR, safe_filename)
 
     with open(file_path, "wb") as buffer:

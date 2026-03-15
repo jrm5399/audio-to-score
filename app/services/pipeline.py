@@ -15,12 +15,13 @@ def process_audio(audio_path: str, stem: str = "bass") -> dict:
 
     stem_map = {
         "vocals": stems_info["vocals_path"],
+        "drums": stems_info["drums_path"],
         "bass": stems_info["bass_path"],
         "other": stems_info["other_path"],
     }
 
     if stem not in stem_map:
-        raise ValueError("Invalid stem. Choose one of: vocals, bass, other")
+        raise ValueError("Invalid stem. Choose one of: vocals, drums, bass, other")
 
     selected_stem_path = stem_map[stem]
     print(f"Selected stem: {selected_stem_path}")
