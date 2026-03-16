@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import librosa
 import numpy as np
 import pretty_midi
@@ -104,8 +105,16 @@ def transcribe_audio_to_midi(audio_path: str):
 
     midi.instruments.append(instrument)
 
-    base_name = os.path.splitext(os.path.basename(audio_path))[0]
-    midi_path = os.path.join(OUTPUT_DIR, f"{base_name}.mid")
+    audio_path_obj = Path(audio_path)
+
+    # expected: data/stems/<job_id>/htdemucs/<song>/<stem>.wav
+    job_id = audio_path_obj.parts[-4] if len(audio_path_obj.parts) >= 4 else "default"
+    stem_name = audio_path_obj.stem
+
+    job_output_dir = Path(OUTPUT_DIR) / job_id
+    job_output_dir.mkdir(parents=True, exist_ok=True)
+
+    midi_path = str(job_output_dir / f"{stem_name}.mid")
     midi.write(midi_path)
 
     return {
