@@ -33,7 +33,11 @@ async def upload_audio(
 ):
     try:
         ingest_result = save_uploaded_file(file)
-        result = process_audio(ingest_result["audio_path"], stem)
+        print("UPLOAD INGEST RESULT:", ingest_result)
+        result = process_audio(
+            audio_path=ingest_result["audio_path"],
+            stem=stem
+        )
 
         transcription = result["transcription"]
         score = result["score"]
@@ -68,7 +72,11 @@ async def process_youtube(
 ):
     try:
         ingest_result = download_youtube_audio(url)
-        result = process_audio(ingest_result["audio_path"], stem)
+        print("YOUTUBE INGEST RESULT:", ingest_result)
+        result = process_audio(
+            audio_path=ingest_result["audio_path"],
+            stem=stem
+        )
 
         transcription = result["transcription"]
         score = result["score"]

@@ -3,6 +3,7 @@ import re
 import shutil
 import yt_dlp
 from fastapi import UploadFile
+import uuid
 
 INPUT_DIR = "data/input"
 os.makedirs(INPUT_DIR, exist_ok=True)
@@ -18,20 +19,26 @@ def sanitize_filename(filename: str) -> str:
 
     return f"{safe_name}{safe_ext}"
 
-ALLOWED_UPLOAD_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac"}
+
 def save_uploaded_file(file: UploadFile) -> dict:
     safe_filename = sanitize_filename(file.filename or "uploaded_audio.mp3")
     ext = os.path.splitext(safe_filename)[1].lower()
 
-    if ext not in ALLOWED_UPLOAD_EXTENSIONS:
+    allowed_upload_extensions = {".mp3", ".wav", ".m4a", ".flac"}
+    if ext not in allowed_upload_extensions:
         raise ValueError(f"Unsupported file type: {ext}")
 
-    file_path = os.path.join(INPUT_DIR, safe_filename)
+    job_id = str(uuid.uuid4())
+    job_input_dir = os.path.join(INPUT_DIR, job_id)
+    os.makedirs(job_input_dir, exist_ok=True)
+
+    file_path = os.path.join(job_input_dir, safe_filename)
 
     with open(file_path, "wb") as buffer:
         buffer.write(file.file.read())
 
     return {
+        "job_id": job_id,
         "audio_path": file_path,
         "source_type": "upload",
         "original_name": file.filename,
@@ -39,12 +46,17 @@ def save_uploaded_file(file: UploadFile) -> dict:
     }
 
 
+
 def download_youtube_audio(url: str) -> dict:
+    job_id = str(uuid.uuid4())
+    job_input_dir = os.path.join(INPUT_DIR, job_id)
+    os.makedirs(job_input_dir, exist_ok=True)
+
     node_path = shutil.which("node")
 
     ydl_opts = {
         "format": "bestaudio/best",
-        "outtmpl": os.path.join(INPUT_DIR, "%(title)s.%(ext)s"),
+        "outtmpl": os.path.join(job_input_dir, "%(title)s.%(ext)s"),
         "postprocessors": [{
             "key": "FFmpegExtractAudio",
             "preferredcodec": "mp3",
@@ -55,6 +67,11 @@ def download_youtube_audio(url: str) -> dict:
         "noprogress": True,
         "verbose": True,
     }
+
+    print("INGEST FILE:", __file__)
+    print("job_id:", job_id)
+    print("job_input_dir:", job_input_dir)
+    print("outtmpl:", ydl_opts["outtmpl"])
 
     if node_path:
         ydl_opts["js_runtimes"] = {
@@ -69,12 +86,13 @@ def download_youtube_audio(url: str) -> dict:
 
     mp3_path = os.path.splitext(original_filename)[0] + ".mp3"
     safe_filename = sanitize_filename(os.path.basename(mp3_path))
-    safe_path = os.path.join(INPUT_DIR, safe_filename)
+    safe_path = os.path.join(job_input_dir, safe_filename)
 
     if mp3_path != safe_path and os.path.exists(mp3_path):
         os.replace(mp3_path, safe_path)
 
     return {
+        "job_id": job_id,
         "audio_path": safe_path,
         "source_type": "youtube",
         "original_name": info.get("title"),
